@@ -1,0 +1,72 @@
+package com.javarush.task.task31.task3105;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+
+/* 
+Добавление файла в архив
+*/
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        ZipEntry zipEntry;
+        ZipEntry zipEntryF;
+        ZipFile zipFile = new ZipFile(new File(args[1]));
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(args[1]));
+        Path path = Paths.get(args[0]);
+        Map<String,byte[]> map= new HashMap<>();
+
+
+        boolean nesovpal = true;
+        while ((zipEntry = zipInputStream.getNextEntry())!=null)  //Записываем все данные из архива в Map
+        {
+           zipEntryF = zipFile.getEntry(zipEntry.getName());
+            byte[] b = new  byte[(int)zipEntryF.getSize()]; //через файл так как через zipEntry.getSize() выдаёт -1
+                                                            // при повторном проходе программой если кто объяснит буду благадарен
+            for (int i = 0;i<b.length;i++)
+            {b[i] = (byte) zipInputStream.read();}
+             map.put(zipEntry.getName(),b);
+        }
+        
+        zipInputStream.closeEntry();
+        zipInputStream.close();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(args[1]));
+
+        for (Map.Entry<String,byte[]> mp : map.entrySet())                           //Проходим по созданной карте
+        {
+            if(path.getFileName().equals(Paths.get(mp.getKey()).getFileName()))   // если попадаем на перезаписываемый файл 
+            {                                                                     //то перезаписываем его
+                zipEntry = new ZipEntry(mp.getKey());
+                zipOutputStream.putNextEntry(zipEntry);
+                Files.copy(path,zipOutputStream);
+                nesovpal = false;                                               //отмечаем что файл был найден
+            }
+            else {                                                            //пишем все файлы которые не совпали
+                zipEntry = new ZipEntry(mp.getKey());
+                zipOutputStream.putNextEntry(zipEntry);
+                zipOutputStream.write(mp.getValue());
+            }
+        }
+
+        if(nesovpal)                                                           //если файл небыл найден то     
+        {                                                                       
+            zipEntry = new ZipEntry("new\\"+path.getFileName());
+            zipOutputStream.putNextEntry(zipEntry);
+            Files.copy(path,zipOutputStream);                                   //добавляем его в массив
+
+
+        }
+zipOutputStream.closeEntry();
+        zipOutputStream.close();
+
+
+    }
+}
