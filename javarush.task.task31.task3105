@@ -29,7 +29,7 @@ public class Solution {
         while ((zipEntry = zipInputStream.getNextEntry())!=null)  //Записываем все данные из архива в Map
         {
            zipEntryF = zipFile.getEntry(zipEntry.getName());
-            byte[] b = new  byte[(int)zipEntryF.getSize()]; //через файл так как через zipEntry.getSize() выдаёт -1
+            byte[] b = new  byte[(int)zipEntryF.getSize()];  //через файл так как через zipEntry.getSize() выдаёт -1
                                                             // при повторном проходе программой если кто объяснит буду благадарен
             for (int i = 0;i<b.length;i++)
             {b[i] = (byte) zipInputStream.read();}
